@@ -144,13 +144,15 @@ box_get_matches(box_slice_t boxes, box_slice_t* matches, bool (*test)(box_t*))
 
 // Returns true if the box contains a negative value.
 bool
-is_negative(box_t* box) {
+is_negative(box_t* box)
+{
 	return box_open(box) < 0;
 }
 
 // Returns true if the box contains a positive value.
 bool
-is_positive(box_t* box) {
+is_positive(box_t* box)
+{
 	return box_open(box) > 0;
 }
 
