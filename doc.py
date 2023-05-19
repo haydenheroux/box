@@ -16,7 +16,20 @@ class Doc(NamedTuple):
 
 
 def fmt_doc(doc: Doc) -> str:
-    return f"{doc.return_type} {doc.name} {doc.description} {doc.parameters}"
+    lines = list()
+    lines.append(f"## {doc.name}")
+    lines.append("")
+    lines.append(f"{doc.return_type} {doc.name}")
+    lines.append("")
+    if doc.description:
+        lines.extend(doc.description)
+    if doc.parameters:
+        lines.append("")
+        lines.append("Parameters:")
+        lines.extend([f" - {parameter}" for parameter in doc.parameters])
+    lines.append("\n")
+    return '\n'.join(lines)
+
 
 def parse_doc(doc: List[str]) -> Doc:
     description = None
