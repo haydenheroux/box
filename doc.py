@@ -1,13 +1,10 @@
 #!/usr/bin/python3
+
 from typing import List, NamedTuple, Optional
 
-def get_lines(filename: str) -> List[str]:
-    lines = list()
-    with open(filename, "r") as file:
-        for line in file:
-            lines.append(line)
-    return lines
-
+"""
+Documents a source code object.
+"""
 class Doc(NamedTuple):
     description: Optional[List[str]]
     name: Optional[str]
@@ -15,14 +12,26 @@ class Doc(NamedTuple):
     return_type: Optional[str]
 
 
+"""
+Gets each line in the file located at filename.
+"""
+def get_lines(filename: str) -> List[str]:
+    lines = list()
+    with open(filename, "r") as file:
+        for line in file:
+            lines.append(line)
+    return lines
+
+
+"""
+Formats a documentation object into a string.
+"""
 def fmt_doc(doc: Doc) -> str:
     lines = list()
-    lines.append(f"## {doc.name}")
+    lines.append(f"## {doc.return_type} {doc.name}")
     lines.append("")
     if doc.description:
         lines.extend(doc.description)
-    lines.append("")
-    lines.append(f"{doc.return_type} {doc.name}")
     if doc.parameters:
         lines.append("")
         lines.append("Parameters:")
@@ -31,50 +40,59 @@ def fmt_doc(doc: Doc) -> str:
     return '\n'.join(lines)
 
 
+"""
+Finds the index of the first definition line.
+"""
+def find_definition_start(doc: List[str]) -> int:
+    for index, line in enumerate(doc):
+        if not line.startswith("//"):
+            return index
+    return 0
+
+"""
+Parses lines of a documentation string into a documentation object.
+"""
 def parse_doc(doc: List[str]) -> Doc:
-    description = None
     name = None
     parameters = None
     return_type = None
 
-    definition = None
+    # Separate each part of the documentation
+    definition_start = find_definition_start(doc)
+    description = doc[:definition_start]
+    definition = doc[definition_start:]
 
-    for index, line in enumerate(doc):
-        at_end_of_description = not line.startswith("//")
-        if at_end_of_description:
-            description = doc[:index]
-            definition = doc[index:]
-            break
-
-    if description is None:
-        return Doc(description=description, name=name, parameters=parameters, return_type=return_type)
-
-    if definition is None:
-        return Doc(description=description, name=name, parameters=parameters, return_type=return_type)
-
+    # Transform each line of the description
     description = [description_line.replace("//", "").strip() for description_line in description]
 
-    return_type_line = definition[0]
-    return_type_is_struct = "struct" in return_type_line
+    return_type = definition[0]
 
-    if return_type_is_struct:
+    if "struct" in return_type:
         return_type = "struct"
-        final_line = definition[-1]
-        name = final_line.split(' ')[-1].replace(';', '')
+        # Last word of the last line, after deleting semicolon
+        name = definition[-1].split(' ')[-1].replace(';', '')
+        # Each line of the middle part of the definition, after deleting semicolon
         parameters = [parameter.replace(';', '') for parameter in definition[1:-1]]
     else:
-        return_type = return_type_line
+        # Create a string from each line in the signature 
         signature = ''.join(definition[1:])
+        # Split the signature into name and parameter parts
         name_index = signature.find('(')
+        # Name part precedes the parameters
         name = signature[:name_index]
-        parameters = signature[name_index:][1:-1].split(", ")
+        # Individually format each parameter
+        parameters = [paramter.strip() for paramter in signature[name_index:][1:-1].split(',')]
     return Doc(description=description, name=name, parameters=parameters, return_type=return_type)
 
 
+"""
+Gets the documentation strings in the lines of a file.
+"""
 def get_docs(lines: List[str]) -> List[List[str]]:
     in_doc = False
     start_indexes = list()
     end_indexes = list()
+
     for index, line in enumerate(lines):
         at_start_of_doc = line.startswith("//")
         at_end_of_doc = line.startswith("{") or len(line.strip()) == 0
