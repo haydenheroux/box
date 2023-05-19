@@ -89,13 +89,22 @@ def parse_doc(doc: List[str]) -> Doc:
 Gets the documentation strings in the lines of a file.
 """
 def get_docs(lines: List[str]) -> List[List[str]]:
-    in_doc = False
+    # Collection of indexes
     start_indexes = list()
     end_indexes = list()
 
+    # Begin state machine
+    in_doc = False
+
+    # Iterates through all lines 
     for index, line in enumerate(lines):
-        at_start_of_doc = line.startswith("//")
+        # Conditions for state machine
+
         at_end_of_doc = line.startswith("{") or len(line.strip()) == 0
+        at_start_of_doc = line.startswith("//")
+
+        # Transitions for state machine
+
         if in_doc and at_end_of_doc:
             end_indexes.append(index)
             in_doc = False
@@ -103,8 +112,10 @@ def get_docs(lines: List[str]) -> List[List[str]]:
             start_indexes.append(index)
             in_doc = True
 
+    # Colections of parts of documentation
     docs = list()
 
+    # Zip parts of lines into parts of documentation
     indexes = zip(start_indexes, end_indexes)
     for start_index, end_index in indexes:
         docs.append([line.strip() for line in lines[start_index:end_index]])
