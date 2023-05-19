@@ -19,10 +19,10 @@ def fmt_doc(doc: Doc) -> str:
     lines = list()
     lines.append(f"## {doc.name}")
     lines.append("")
-    lines.append(f"{doc.return_type} {doc.name}")
-    lines.append("")
     if doc.description:
         lines.extend(doc.description)
+    lines.append("")
+    lines.append(f"{doc.return_type} {doc.name}")
     if doc.parameters:
         lines.append("")
         lines.append("Parameters:")
