@@ -35,7 +35,7 @@ def fmt_doc(doc: Doc) -> str:
     if doc.parameters:
         lines.append("")
         lines.append("Parameters:")
-        lines.extend([f" - {parameter}" for parameter in doc.parameters])
+        lines.extend([f" - `{parameter}`" for parameter in doc.parameters])
     lines.append("\n")
     return '\n'.join(lines)
 
@@ -114,5 +114,7 @@ def get_docs(lines: List[str]) -> List[List[str]]:
 
 if __name__ == "__main__":
     lines = get_lines("box.c")
-    for doc in get_docs(lines):
-        print(fmt_doc(parse_doc(doc)))
+    doc_lines = [fmt_doc(parse_doc(doc)) for doc in get_docs(lines)]
+    with open("README.md", "w") as file:
+        file.write('\n'.join(doc_lines))
+
